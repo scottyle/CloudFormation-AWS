@@ -16,11 +16,11 @@ Stack is the way CloudFormation uses to organize the resource instantiation. Ref
 
   This repo contains templates used to create VPCs, Security Groups and EC2 instances on AWS
 
-  This template document called create-vpc.yml will create a VPC as shown in the diagram, the VPC will contain different CIDR blocks. 
+  This template document will be called create-vpc.yml will create a VPC as shown in the diagram, the VPC will contain different CIDR blocks one private and one public. The create-vpc will output the VPC-ID, Private and Public Subnet ID which the other stacks will reference. 
 
-  Another template document called create-sg.yml will make a security group with two rules: allow SSH from a public space and allow HTTP from a public space.
+  Another template document called create-sg.yml will make a security group with two rules: allow SSH from a public space and allow HTTP from a public space. This template will reference the create-vpc stack. 
 
-  Finally the last template document called create-ec2.yml will create one EC2 instance with the ability of being located in any subnet in the new VPC and use the security groups created by the stack create-sg.yml 
+  Finally the last template document called create-ec2.yml will create 2 EC2 instances with the ability of being located in any subnet in the new VPC and use the security groups created by the stack create-sg.yml 
   
   
   
