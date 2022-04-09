@@ -1,0 +1,60 @@
+Parameters:
+#AMI - Amazon Machine Image 
+  Image:
+    Description: Enter AMI Image ID 
+    Default: ami-0c02fb55956c7d316
+    Type: String 
+
+#Instance type for the Ec2 
+  Instance: 
+    Description: Enter the Instance Type
+    Default: t2.micro 
+    Type: String 
+
+# Name of the Key pair 
+  Key:
+    Description: Enter the Key name Pair 
+    Default: syst144.pem
+    Type: String
+
+#Availability zone of where the Ec2 will be 
+  Az: 
+    Description: Enter the availability zone 
+    Default: us-east-1a
+    Type: String 
+
+
+Resources:  
+#Private EC2 
+  EC2VM1Private:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref Image 
+      InstanceType: !Ref Instance
+      KeyName: !Ref Key 
+      AvailabilityZone: !Ref Az
+#Value imported from Stack SecurityGroup-CF       
+      SecurityGroupIds: 
+      - !ImportValue SecurityGroup-CF-SecurityGroup
+      SubnetId: !ImportValue VPC-Scott-PrivateSubnet
+      Tags: 
+        - Key: Name
+          Value: CFVM1
+#Public EC2
+  EC2VM2Public:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref Image 
+      InstanceType: !Ref Instance
+      KeyName: !Ref Key 
+      AvailabilityZone: !Ref Az
+#Value imported from Stack SecurityGroup-CF       
+      SecurityGroupIds: 
+      - !ImportValue SecurityGroup-CF-SecurityGroup
+      SubnetId: !ImportValue VPC-Scott-PublicSubnet
+      Tags: 
+        - Key: Name
+          Value: CFVM2
+
+
+

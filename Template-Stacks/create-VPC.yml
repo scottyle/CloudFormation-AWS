@@ -1,0 +1,165 @@
+#This template makes a VPC using CloudFormation
+
+Description: This template deploys a VPC, this template will be located in AWS Region us-east. The VPC will called VPC-Scott, it will contain a private and public cidr block an internet gateway and a NAT gateway. The stack will also create a security group.
+
+Parameters:
+  
+#Takes a string input from user to specify the IP range for this VPC 
+  VpcCIDR:
+    Description: Enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 192.168.0.0/16
+
+#Takes a string input to enter the IP range for the public subnet 
+  PublicSubnetA:
+    Description: Enter the IP range (CIDR notation) for the public subnet A
+    Type: String
+    Default: 192.168.0.0/24
+
+#Takes a string input to enter the IP range for the private subnet 
+  PrivateSubnetA:
+    Description: Enter the IP range (CIDR notation) for the public subnet A
+    Type: String
+    Default: 192.168.1.0/24  
+
+Resources:
+  VPCA: 
+    #This defines the Cloudformation Type we want to create 
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: VPC-Scott
+  
+  #Creating the Internet Gateway resource - logical ID of the resource 
+  igw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: 
+        - Key: Name 
+          Value: Igw-CF
+  
+  igwAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      VpcId: !Ref VPCA
+      InternetGatewayId: !Ref igw 
+
+  #Create the public subnet 
+  PublicSubnet:
+    Type: AWS::EC2::Subnet 
+    Properties: 
+      CidrBlock: !Ref PublicSubnetA
+      AvailabilityZone: !Select [ 0, !GetAZs '']
+      Tags: 
+        - Key: Name
+          Value: Public-Subnet-A
+      VpcId: !Ref VPCA
+
+  #Create the Public route table 
+  PublicRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: Public Route Table 
+      VpcId: !Ref VPCA
+
+  #Create a Public Route 
+  PublicRoute:
+    Type: AWS::EC2::Route 
+    Properties:
+      RouteTableId: !Ref PublicRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref igw
+
+  #Associate the public route to the route table 
+  PublicSubnetAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicRT
+      SubnetId: !Ref PublicSubnet
+
+  PrivateSubnet: 
+    Type: AWS::EC2::Subnet 
+    Properties: 
+      CidrBlock: !Ref PrivateSubnetA
+      AvailabilityZone: !Select [ 0, !GetAZs '']
+      Tags: 
+        - Key: Name
+          Value: Private-Subnet-A
+      VpcId: !Ref VPCA
+
+#Create the Private route table 
+  PrivateRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags: 
+        - Key: Name
+          Value: Private Route Table 
+      VpcId: !Ref VPCA
+
+  #Create a Private Route 
+  PrivateRoute:
+    Type: AWS::EC2::Route 
+    Properties:
+      RouteTableId: !Ref PrivateRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref igw
+
+  #Associate the public route to the route table 
+  PrivateSubnetAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PrivateRT
+      SubnetId: !Ref PrivateSubnet
+
+  #Creates the Elastic IP addr
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: !Ref VPCA 
+  
+  #Create a NAT gateway resource 
+  NATGW:
+    Type: AWS::EC2::NatGateway
+    Properties: 
+      AllocationId: 
+        Fn::GetAtt:
+        - ElasticIP
+        - AllocationId
+      SubnetId: !Ref PublicSubnet
+
+
+#Outputs section declares output values you can import into other stacks. Here we're going to output the VPC-ID 
+Outputs: 
+  #Logical ID name:
+  VPCOutput:
+    Description: This outputs the VPC VPC-ID
+    Value: !Ref VPCA
+    Export:
+  #AWS::StackName returns the name of the stack as specified 
+      Name: !Sub ${AWS::StackName}-VPC
+
+  PublicSubnetOutput:
+    Description: Public Subnet ID 
+    Value: !Ref PublicSubnet 
+    Export: 
+      Name: !Sub ${AWS::StackName}-PublicSubnet
+
+  PrivateSubnetOutput:
+    Description: Private Subnet ID 
+    Value: !Ref PrivateSubnet
+    Export: 
+      Name: !Sub ${AWS::StackName}-PrivateSubnet   
+
+  
+        
+
+
+
+
+

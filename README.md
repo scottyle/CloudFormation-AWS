@@ -1,6 +1,6 @@
 # CloudFormation Operation 
 
-The fundamental building block of CloudFormation is the **stack**. A stack is the executed definition of a template, the stack builds the infrastructure using a template. 
+The fundamental building block of CloudFormation is the **stack**. A stack is the executed definition of a template, the stack builds the infrastructure using a template. Once the stack is deleted, all resources are deleted as well. 
 
 A template is a declaration of AWS resources that make up a **stack**
 
